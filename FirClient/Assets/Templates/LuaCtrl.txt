@@ -1,9 +1,20 @@
 --File creation in [TIME]--
+
+--Add [NAME] to LuaUiNames.lua:
+--[NAME] = '[NAME]',
+
+--Add require to CtrlManager.lua and add to controllers:
+--local ui[NAME]Ctrl = require "UIController/UI[NAME]Ctrl"
+--self:AddCtrl(UiNames.[NAME], ui[NAME]Ctrl)
+
 local UIBaseCtrl = require "UIController/UIBaseCtrl"
 local UI[NAME]Ctrl = class("UI[NAME]Ctrl", UIBaseCtrl)
 
+local panelMgr = nil
+
 function UI[NAME]Ctrl:Awake()
-	panelMgr:CreatePanel(UiNames.[NAME])
+    panelMgr = MgrCenter:GetManager(ManagerNames.Panel)
+    panelMgr:CreatePanel(self, UILayer.Common, UiNames.[NAME], self.OnCreateOK)
 	logWarn("UI[NAME]Ctrl.Awake--->>")
 end
 

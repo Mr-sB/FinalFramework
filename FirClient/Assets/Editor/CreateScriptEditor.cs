@@ -31,7 +31,16 @@ return uiNames;
             string fileName = Path.GetFileNameWithoutExtension(pathName);
             if (resourceFile.EndsWith("LuaCtrl.txt"))
             {
-                fileName = fileName.Replace("Ctrl", string.Empty);
+                int startIndex = 0;
+                int length = fileName.Length;
+                if (fileName.StartsWith("UI"))
+                {
+                    startIndex = 2;
+                    length -= 2;
+                }
+                if (fileName.EndsWith("Ctrl"))
+                    length -= 4;
+                fileName = fileName.Substring(startIndex, length);
             }
             content = content.Replace("[NAME]", fileName);
             content = content.Replace("[TIME]", System.DateTime.Now.ToString("yyyy年MM月dd日 HH:mm:ss dddd"));
