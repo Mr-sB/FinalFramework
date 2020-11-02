@@ -14,6 +14,8 @@ end
 --启动事件--
 function UI[NAME]Ctrl:OnCreateOK(behaviour)
 	self.gameObject = behaviour.gameObject
+	self:InitBase()
+	
 	logWarn("OnCreateOK--->>"..self.gameObject.name)
 end
 
