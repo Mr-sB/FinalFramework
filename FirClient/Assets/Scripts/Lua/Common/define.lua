@@ -6,11 +6,12 @@ _G.MgrCenter = nil
 
 _G.Color32 = require "Common/Color32"
 _G.UiNames = require "Common/LuaUiNames"
+_G.CtrlNames = require "Common/LuaCtrlNames"
 
-_G.CtrlNames = {
-	GMCmd = 'GMCmdCtrl',
-	Preload = 'PreloadCtrl',
-}
+-- _G.CtrlNames = {
+-- 	GMCmd = 'GMCmdCtrl',
+-- 	Preload = 'PreloadCtrl',
+-- }
 
 _G.ModuleNames = {
 	Battle = "BattleModule",

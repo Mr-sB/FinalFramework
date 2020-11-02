@@ -1,0 +1,5 @@
+--File creation in [TIME]--
+
+local [NAME]Ctrl = class("[NAME]Ctrl")
+
+return [NAME]Ctrl

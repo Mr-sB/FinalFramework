@@ -9,6 +9,12 @@ public class CreateScriptEditor : BaseEditor
 {
     const string tempViewPath = "/Templates/";
     const string luaCtrlCodePath = "/Scripts/Lua/UIController/";
+    const string ctrlNamesTemplate = @"
+local ctrlNames = {
+[DATA]
+};
+return ctrlNames;
+";
     const string uiNamesTemplate = @"
 local uiNames = {
 [DATA]
@@ -41,13 +47,24 @@ return uiNames;
                 if (fileName.EndsWith("Ctrl"))
                     length -= 4;
                 fileName = fileName.Substring(startIndex, length);
+                
+                CreateLuaCtrlInternal(fileName);
             }
-            content = content.Replace("[NAME]", fileName);
-            content = content.Replace("[TIME]", System.DateTime.Now.ToString("yyyy年MM月dd日 HH:mm:ss dddd"));
-
-            var writer = new StreamWriter(fullName, false, System.Text.Encoding.UTF8);
-            writer.Write(content);
-            writer.Close();
+            else if (resourceFile.EndsWith("Ctrl.txt"))
+            {
+                if (fileName.EndsWith("Ctrl"))
+                    fileName = fileName.Substring(0, fileName.Length - 4);
+                CreateCtrlInternal(fileName);
+            }
+            else
+            {
+                content = content.Replace("[NAME]", fileName);
+                content = content.Replace("[TIME]", System.DateTime.Now.ToString("yyyy年MM月dd日 HH:mm:ss dddd"));
+            
+                var writer = new StreamWriter(fullName, false, System.Text.Encoding.UTF8);
+                writer.Write(content);
+                writer.Close();
+            }
 
             AssetDatabase.ImportAsset(pathName);
             AssetDatabase.Refresh();
@@ -73,12 +90,21 @@ return uiNames;
             GetSelectedPathOrFallback() + "/ Ctrl.lua",
             null, "Assets/Templates/LuaCtrl.txt");
     }
+    
+    [MenuItem("Assets/Create/Game/Ctrl", false, 82)]
+    static void CreateCtrl()  
+    {
+        ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0,
+            ScriptableObject.CreateInstance<CreateScriptAssetAction>(),
+            GetSelectedPathOrFallback() + "/ Ctrl.lua",
+            null, "Assets/Templates/Ctrl.txt");
+    }
 
     public static void CreateLuaCtrlInternal(string panelName)
     {
         var name = panelName.Replace("Panel", string.Empty);
-        AddLuaUiName(name);
-
+        if (!TryAddLuaUiName(name)) return;
+        
         var ctrlName = "UI" + name + "Ctrl.lua";
         string luaCtrlFilePath = AppDataPath + luaCtrlCodePath + ctrlName;
         if (File.Exists(luaCtrlFilePath))
@@ -95,8 +121,30 @@ return uiNames;
         writer.Close();
         AssetDatabase.Refresh();
     }
+    
+    public static void CreateCtrlInternal(string name)
+    {
+        if(!TryAddCtrlName(name)) return;
 
-    static void AddLuaUiName(string name)
+        var ctrlName = name + "Ctrl.lua";
+        string luaCtrlFilePath = AppDataPath + luaCtrlCodePath + ctrlName;
+        if (File.Exists(luaCtrlFilePath))
+        {
+            return;
+        }
+        //TODO
+        var tempVileFilePath = AppDataPath + tempViewPath + "Ctrl.txt";
+        string content = File.ReadAllText(tempVileFilePath);
+        content = content.Replace("[NAME]", name);
+        content = content.Replace("[TIME]", System.DateTime.Now.ToString("yyyy年MM月dd日 HH:mm:ss dddd"));
+
+        var writer = new StreamWriter(luaCtrlFilePath, false, System.Text.Encoding.UTF8);
+        writer.Write(content);
+        writer.Close();
+        AssetDatabase.Refresh();
+    }
+
+    static bool TryAddLuaUiName(string name)
     {
         List<string> uiNames = new List<string>();
         var luaUiNames = AppDataPath + "/Editor/LuaUiNames.txt";
@@ -111,38 +159,126 @@ return uiNames;
                 }
                 if (name == s)
                 {
-                    return;
+                    return false;
                 }
                 else
                 {
                     uiNames.Add(s);
                 }
             }
-            uiNames.Add(name);
             File.Delete(luaUiNames);
         }
+        uiNames.Add(name);
         File.AppendAllLines(luaUiNames, uiNames.ToArray());
+        AddToCtrlManager();
+        return true;
+    }
 
-        var uiNameText = string.Empty;
-        var ctrlMgrText = string.Empty;
-        foreach(var l in uiNames)
+    static bool TryAddCtrlName(string name)
+    {
+        List<string> ctrlNames = new List<string>();
+        var luaCtrlNames = AppDataPath + "/Editor/LuaCtrlNames.txt";
+        if (File.Exists(luaCtrlNames))
         {
-            uiNameText += "	" + l + " = '" + l + "',\n";
-            ctrlMgrText += "	self:AddCtrl(UiNames." + l + ", UI" + l + "Ctrl:new());\n";
+            var lines = File.ReadLines(luaCtrlNames);
+            foreach (var s in lines)
+            {
+                if (string.IsNullOrEmpty(s))
+                {
+                    continue;
+                }
+                if (name == s)
+                {
+                    return false;
+                }
+                else
+                {
+                    ctrlNames.Add(s);
+                }
+            }
+            File.Delete(luaCtrlNames);
+        }
+        ctrlNames.Add(name);
+        File.AppendAllLines(luaCtrlNames, ctrlNames.ToArray());
+        AddToCtrlManager();
+        return true;
+    }
+
+    static void AddToCtrlManager()
+    {
+        List<string> ctrlNames = new List<string>();
+        var luaCtrlNames = AppDataPath + "/Editor/LuaCtrlNames.txt";
+        if (File.Exists(luaCtrlNames))
+        {
+            var lines = File.ReadLines(luaCtrlNames);
+            foreach (var s in lines)
+            {
+                if (string.IsNullOrEmpty(s))
+                {
+                    continue;
+                }
+                ctrlNames.Add(s);
+            }
+        }
+        
+        List<string> uiNames = new List<string>();
+        var luaUiNames = AppDataPath + "/Editor/LuaUiNames.txt";
+        if (File.Exists(luaUiNames))
+        {
+            var lines = File.ReadLines(luaUiNames);
+            foreach (var s in lines)
+            {
+                if (string.IsNullOrEmpty(s))
+                {
+                    continue;
+                }
+                uiNames.Add(s);
+            }
+        }
+
+        var ctrlNameText = string.Empty;
+        var uiNameText = string.Empty;
+        var ctrlMgrRequire = string.Empty;
+        var ctrlMgrText = string.Empty;
+        ctrlMgrText += "    --lua controller--\n";
+        foreach (var name in ctrlNames)
+        {
+            ctrlNameText += "	" + name + " = '" + name + "Ctrl',\n";
+            ctrlMgrRequire += "local "+ name + "Ctrl = require \"Controller/"+ name +"Ctrl\"\n";
+            ctrlMgrText += "	self:AddCtrl(CtrlNames." + name + ", " + name + "Ctrl)\n";
+        }
+
+        ctrlMgrRequire += '\n';
+        ctrlMgrText += "\n    --ui controller--\n";
+        foreach(var name in uiNames)
+        {
+            uiNameText += "	" + name + " = '" + name + "',\n";
+            ctrlMgrRequire += "local ui"+ name + "Ctrl = require \"UIController/UI"+ name +"Ctrl\"\n";
+            ctrlMgrText += "	self:AddCtrl(UiNames." + name + ", ui" + name + "Ctrl)\n";
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////
-        var ctrlMgrTemplate = AppDataPath + tempViewPath + "CtrlMgr.txt";
+        var ctrlMgrTemplate = AppDataPath + tempViewPath + "CtrlManager.txt";
         var ctrlMgrContent = File.ReadAllText(ctrlMgrTemplate);
+        ctrlMgrContent = ctrlMgrContent.Replace("[REQUIRE]", ctrlMgrRequire);
         ctrlMgrContent = ctrlMgrContent.Replace("[DATA]", ctrlMgrText);
 
-        var ctrlMgrFile = AppDataPath + "/Scripts/Lua/Logic/CtrlMgr.lua";
+        var ctrlMgrFile = AppDataPath + "/Scripts/Lua/Manager/CtrlManager.lua";
         if (File.Exists(ctrlMgrFile))
         {
             File.Delete(ctrlMgrFile);
         }
         File.WriteAllText(ctrlMgrFile, ctrlMgrContent);
 
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        var ctrlNamesContent = ctrlNamesTemplate.Replace("[DATA]", ctrlNameText);
+        var ctrlNamesFile = AppDataPath + "/Scripts/Lua/Common/LuaCtrlNames.lua";
+        if (File.Exists(ctrlNamesFile))
+        {
+            File.Delete(ctrlNamesFile);
+        }
+        File.WriteAllText(ctrlNamesFile, ctrlNamesContent);
+        
         ///////////////////////////////////////////////////////////////////////////////////////////
         var uiNamesContent = uiNamesTemplate.Replace("[DATA]", uiNameText);
         var uiNamesFile = AppDataPath + "/Scripts/Lua/Common/LuaUiNames.lua";
@@ -152,7 +288,7 @@ return uiNames;
         }
         File.WriteAllText(uiNamesFile, uiNamesContent);
     }
-
+    
     static string GetSelectedPathOrFallback()
     {
         string path = "Assets";

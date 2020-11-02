@@ -9,7 +9,9 @@ local uiNames = {
 	Dungeon = 'Dungeon',
 	Tips = 'Tips',
 	ItemTips = 'ItemTips',
+	BaseMap = 'BaseMap',
 	Bag = 'Bag',
 	ChooseActor = 'ChooseActor',
+
 };
 return uiNames;

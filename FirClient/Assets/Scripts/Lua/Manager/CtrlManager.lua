@@ -1,5 +1,5 @@
-local gmCmdCtrl = require "Controller/GMCmdCtrl"
-local preloadCtrl = require "Controller/PreloadCtrl"
+local GMCmdCtrl = require "Controller/GMCmdCtrl"
+local PreloadCtrl = require "Controller/PreloadCtrl"
 
 local uiMainCtrl = require "UIController/UIMainCtrl"
 local uiLoaderCtrl = require "UIController/UILoaderCtrl"
@@ -10,18 +10,20 @@ local uiHeroCtrl = require "UIController/UIHeroCtrl"
 local uiDungeonCtrl = require "UIController/UIDungeonCtrl"
 local uiTipsCtrl = require "UIController/UITipsCtrl"
 local uiItemTipsCtrl = require "UIController/UIItemTipsCtrl"
+local uiBaseMapCtrl = require "UIController/UIBaseMapCtrl"
 local uiBagCtrl = require "UIController/UIBagCtrl"
 local uiChooseActorCtrl = require "UIController/UIChooseActorCtrl"
+
 
 local CtrlManager = class("CtrlManager")
 
 function CtrlManager:Initialize()
 	self.controllers = {}
-	--lua controller--
-	self:AddCtrl(CtrlNames.GMCmd, gmCmdCtrl)
-	self:AddCtrl(CtrlNames.Preload, preloadCtrl)
-	
-	--ui controller--
+    --lua controller--
+	self:AddCtrl(CtrlNames.GMCmd, GMCmdCtrl)
+	self:AddCtrl(CtrlNames.Preload, PreloadCtrl)
+
+    --ui controller--
 	self:AddCtrl(UiNames.Main, uiMainCtrl)
 	self:AddCtrl(UiNames.Loader, uiLoaderCtrl)
 	self:AddCtrl(UiNames.Login, uiLoginCtrl)
@@ -31,6 +33,7 @@ function CtrlManager:Initialize()
 	self:AddCtrl(UiNames.Dungeon, uiDungeonCtrl)
 	self:AddCtrl(UiNames.Tips, uiTipsCtrl)
 	self:AddCtrl(UiNames.ItemTips, uiItemTipsCtrl)
+	self:AddCtrl(UiNames.BaseMap, uiBaseMapCtrl)
 	self:AddCtrl(UiNames.Bag, uiBagCtrl)
 	self:AddCtrl(UiNames.ChooseActor, uiChooseActorCtrl)
 

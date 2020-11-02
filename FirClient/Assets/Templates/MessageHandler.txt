@@ -9,7 +9,7 @@ namespace FirClient.Handler
 {
     public class [NAME] : BaseHandler
     {
-        public override void OnMessage(NetPeer peer, NetDataReader reader)
+        public override void OnMessage(byte[] bytes)
         {
         }
     }
